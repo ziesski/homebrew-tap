@@ -1,0 +1,49 @@
+name: bump
+
+# Follow new kakao-max npm releases: update the formula, install and test it, and commit only if that passes.
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: bump
+
+jobs:
+  bump:
+    runs-on: macos-15
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: 1
+      HOMEBREW_NO_INSTALL_CLEANUP: 1
+    steps:
+      - uses: actions/checkout@v6
+      - name: Update the formula to the latest npm version
+        id: update
+        run: |
+          latest=$(curl -fsSL https://registry.npmjs.org/kakao-max/latest | jq -r .version)
+          if ! [[ "$latest" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Unexpected npm version: $latest" >&2
+            exit 1
+          fi
+          current=$(sed -nE 's#.*/kakao-max-([^/"]+)\.tgz".*#\1#p' Formula/kakao-max.rb)
+          if [ "$latest" = "$current" ]; then
+            echo "Formula is already at $current"
+            exit 0
+          fi
+          sha=$(curl -fsSL "https://registry.npmjs.org/kakao-max/-/kakao-max-$latest.tgz" | shasum -a 256 | cut -d' ' -f1)
+          sed -i '' -E "s#kakao-max-[^/\"]+\.tgz#kakao-max-$latest.tgz#; s#sha256 \"[0-9a-f]{64}\"#sha256 \"$sha\"#" Formula/kakao-max.rb
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -am "kakao-max $latest"
+          echo "version=$latest" >> "$GITHUB_OUTPUT"
+      - name: Install and test the new version
+        if: steps.update.outputs.version
+        run: |
+          brew tap ziesski/tap "$GITHUB_WORKSPACE"
+          brew install --formula ziesski/tap/kakao-max
+          brew test ziesski/tap/kakao-max
+      - if: steps.update.outputs.version
+        run: git push origin HEAD:main

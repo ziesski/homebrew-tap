@@ -1,0 +1,25 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  install:
+    runs-on: macos-15
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: 1
+      HOMEBREW_NO_INSTALL_CLEANUP: 1
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - run: brew tap ziesski/tap "$GITHUB_WORKSPACE"
+      - run: brew style ziesski/tap
+      - run: brew install --formula ziesski/tap/kakao-max
+      - run: brew test ziesski/tap/kakao-max
+      - run: brew audit --strict --online ziesski/tap/kakao-max
