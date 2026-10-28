@@ -27,7 +27,7 @@ class KakaoMax < Formula
   end
 
   test do
-    assert_match "kakao-max", shell_output("#{bin}/kakao-max help")
+    assert_match "kakao setup", shell_output("#{bin}/kakao-max help")
     assert_path_exists bin/"kakao-max-mcp"
     assert_path_exists bin/"kakao-max-web"
   end
