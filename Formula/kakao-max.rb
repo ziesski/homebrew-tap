@@ -1,8 +1,8 @@
 class KakaoMax < Formula
   desc "Unofficial headless KakaoTalk account daemon and MCP server for AI agents"
   homepage "https://github.com/ziesski/kakao-max"
-  url "https://registry.npmjs.org/kakao-max/-/kakao-max-0.1.1.tgz"
-  sha256 "e94c251e3a59767fa2a3a5e22f4b075ad0e7b790d9f92eb4800255a6c3730dc1"
+  url "https://registry.npmjs.org/kakao-max/-/kakao-max-0.2.0.tgz"
+  sha256 "a4be94b6a3b65982588b960e912ee8643e5d1815f18958cc5bda5daa4bced88e"
   license "MIT"
 
   livecheck do
